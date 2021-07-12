@@ -1,0 +1,667 @@
+<html style>
+    <head>
+        <style>
+            h1{
+                text-align: center;
+            }
+            body{
+                margin: 0;
+                padding: 0;
+                height:100vh; width: 100vw; 
+                display: flex; 
+                align-content: stretch;
+                flex-direction: column;
+                position: fixed;
+                background-color: bisque;
+            }
+            #failsign{
+                height:100vh; width: 100vw;
+                position: absolute;
+                color: Black;
+                visibility: hidden;
+                z-index: 2;
+                background-color: seagreen;
+            }
+            #congratuation{
+                height:100vh; width: 100vw;
+                position: absolute;
+                color: Black;
+                visibility: hidden;
+                z-index: 2;
+                background-color: seagreen;
+            }
+            #score{
+                text-align: center;
+                color: powderblue;
+                font-weight: bold;
+                font-size: 7vh;
+                margin-bottom: 0.5vh;
+            }
+            #container{
+                /* background-color: blueviolet; */
+                flex:1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-direction: column-reverse;
+            }
+            .lineDeco{
+                background-color: peru;
+            }
+            .no_select{   
+                -ms-user-select: none; 
+                -moz-user-select: -moz-none;
+                -khtml-user-select: none;
+                -webkit-user-select: none;
+                user-select: none;
+            }
+            @keyframes fadeIn {
+                from {opacity: 0;}
+                to {opacity: 1;}
+            }
+            @keyframes fadeOut {
+                from {opacity: 1;}
+                to {opacity: 0;}
+            }
+        </style>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+        <script>
+            let board={};
+            //config
+            const tileMargin = 0.01; //%
+            const boardColor = "rgb(94, 68, 40)";
+            const effectColor = "rgb(225, 255, 250)";
+            const effectDelay = 1;
+            const imagePath = "image/high_resol"
+            //init
+            let boardElement;
+            function readyBoard(id){
+                boardElement = document.createElement("div");
+                boardElement.setAttribute("id", id);
+                container.appendChild(boardElement);
+                let style=`
+                    flex:1;
+                    max-height: ${document.getElementById("container").offsetWidth};
+                    width:${document.getElementById("board").offsetHeight};
+                `;
+                boardElement.setAttribute(`style`,style);
+                updateBoardStyle();
+                return boardElement;
+            }
+            board.readyBoard = readyBoard;
+            //
+            function updateBoardStyle(){
+                const bdr_rad = 10;
+                let style=`
+                    border-radius: ${bdr_rad}px;
+                    background-color: ${boardColor};
+                    flex:1;
+                    max-height: ${document.getElementById("container").offsetWidth};
+                    width:${document.getElementById("board").offsetHeight};
+                    
+                    display: flex; 
+                    flex-direction: column;
+                    flex-wrap: wrap;
+                    position: relative;
+                `;
+                boardElement.setAttribute(`style`,style);
+            }
+            board.updateBoardStyle = updateBoardStyle;
+            function removeTiles(){
+                while (boardElement.firstChild) {
+                    boardElement.removeChild(boardElement.firstChild);
+                }
+            }
+            board.removeTiles = removeTiles;
+            function drawTiles(tiles,size){
+                removeTiles();
+                const bdr_rad = 10;
+                let tileStyle=`
+                    width: ${(100/size)*(1-tileMargin*2)}%;
+                    height: ${(100/size)*(1-tileMargin*2)}%;
+                    margin: ${(100/size)*tileMargin}%;
+                    border-radius: ${bdr_rad}px;
+                `;
+                tiles.forEach(tile=>{
+                    const element = document.createElement("div");
+                    element.setAttribute('class', 'tile no_select');
+                    if(tile != 0){
+                        element.setAttribute('style', tileStyle+`
+                            background-color: rgba(${255*((12-tile)/11)},${155*((12-tile)/11)},${0},1);
+                            display:flex;
+                            align-items: center;
+                            
+                            background-image: url("./source/image/number_${tile}.png");
+                            background-repeat: no-repeat;
+                            background-position: center center;
+                            background-size: contain;
+                        `);
+                    }
+                    else{
+                        element.setAttribute('style', tileStyle);
+                    }
+                    boardElement.appendChild(element);
+                });
+            }
+            board.drawTiles = drawTiles;
+            function effectMaker(x,y,size){
+                let effectElement = document.createElement("div");
+                effectElement.setAttribute("id", "effect");
+
+                const bdr_rad = 10;
+                let tileEffect=`
+                    position: absolute;
+                    top: ${(100/size)*y}%;
+                    left: ${(100/size)*x}%;
+                    
+                    width: ${(100/size)*(1-tileMargin*2)}%;
+                    height: ${(100/size)*(1-tileMargin*2)}%;
+                    margin: ${(100/size)*tileMargin}%;
+                    border-radius: ${bdr_rad}px;
+                    opacity: 0;
+
+                    background-color: ${effectColor};
+                    animation: fadeOut ${effectDelay}s;
+                `;
+                effectElement.setAttribute(`style`,tileEffect);
+                boardElement.appendChild(effectElement)
+            }
+            board.effectMaker = effectMaker;
+        </script>
+        <script>
+            let buttonSet={};
+            //buttonset
+            let buttonSetSize = 45;
+            function updateButtonSetStyle(target){
+                let style=`
+                    height: ${buttonSetSize};
+                    min-width: 100%;
+                    display: flex;
+                    align-item: center;
+                    justify-content: center;
+                    /*background-color: orange;*/
+                `;
+                target.setAttribute(`style`,style);
+            }
+            buttonSet.updateButtonSetStyle = updateButtonSetStyle;
+            function readyButtonSet(id){
+                let buttonSet = document.createElement("div");
+                buttonSet.setAttribute("id", id);
+                container.appendChild(buttonSet);
+                updateButtonSetStyle(buttonSet);
+                return buttonSet;
+            }
+            buttonSet.readyButtonSet = readyButtonSet;
+            //buttonlist
+            const bdr_rad = 15;
+            const tb_margin = 3;
+            const def_color = "peru";
+            const defaultStyle=`
+                flex:1;
+                max-width:100px;
+
+                margin-top: ${tb_margin}px;
+                margin-bottom: ${tb_margin}px;
+                margin-left: 3%;
+                margin-right: 3%;
+
+                border-radius: ${bdr_rad}px;
+                border: solid 0px;
+                
+                color: powderblue;
+                font-size: 1.0em;
+                text-align: center;
+                line-height: ${buttonSetSize-2*tb_margin}px;
+            `;
+            const blankStyle=`
+                flex:1;
+                max-width:100px;
+
+                margin-top: ${tb_margin}px;
+                margin-bottom: ${tb_margin}px;
+                margin-left: 3%;
+                margin-right: 3%;
+
+                visibility: hidden;
+
+            `;
+
+            function updateButtonSet(buttonList,target){
+                buttonList.forEach(item=>{
+                    let element=document.createElement("div");
+                    if(item == null){
+                        element.setAttribute('style', blankStyle);
+                    }
+                    else{
+                        if(item["color"] == undefined){
+                            element.setAttribute('style', defaultStyle+`
+                            background-color: ${def_color};
+                            `);
+                        }
+                        else {
+                            element.setAttribute('style', defaultStyle+`
+                            background-color: ${item["color"]};
+                            `);
+                        }
+                        element.addEventListener('click',item["onPress"]);
+                        element.innerText=item["text"];
+                    }
+                    element.setAttribute('class', "no_select");
+                    target.appendChild(element);
+                });
+            }
+            buttonSet.updateButtonSet = updateButtonSet;
+        </script>
+    </head>
+    
+    <body>
+        <!-- <h1 style="text-align: center;">2048</h1> -->
+        <div id="score" class="lineDeco">SCORE</div>
+        <div id="failsign" onclick="onRestart()">
+            <div style="text-align: center; font-size: 10rem; color: orange;">Fail</div>
+            <div style="text-align: center; font-size: 5rem; color: orange;">touch the screen to restart</div>
+        </div>
+        <div id="congratuation" onclick="onRestart()">
+            <div style="text-align: center; font-size: 10rem; color: orange;">Congratuation!</div>
+        </div>
+        <div id="container"></div>
+    </body>
+    <script>
+        //const windowSize = [screen.availHeight,screen.availWidth];
+
+        //innerInfo
+        const clear = 11;
+        let boardWidth = 4; 
+        let tileSet=[];
+        let emptyCount = 0;
+        let fourRatio = 0.1;
+        const ScoreBoard = document.getElementById("score");
+
+        //innerFunction
+        function generateTile(tiles){
+            let randNum = Math.random()*(emptyCount);
+            let effectPos = null;
+            for(let i=0; randNum >= 0; i++){
+                if (tiles[i] == 0){
+                    effectPos = i;
+                    randNum -= 1;
+                    if (randNum < 0){
+                        let rand2 = Math.random();
+                        if(rand2 > fourRatio)
+                            tiles[i] = 1;
+                        else
+                            tiles[i] = 2;
+                        emptyCount -= 1;
+                        break;
+                    }
+                }
+            }
+            board.drawTiles(tiles.slice(),boardWidth);
+            if (emptyCount == 0 && checkFail()){
+                onLoseEvent();
+            }
+            ScoreBoard.textContent = getScore(tileSet);
+            board.effectMaker(Math.floor(effectPos/boardWidth),effectPos%boardWidth, boardWidth);
+            return true;
+        }
+        function setGame(size){
+            //init
+            emptyCount = size*size;
+            //clearBoard
+            tileSet = [];
+            for(let i=0; i<emptyCount; i++){
+                tileSet[i] = 0;
+            }
+            //
+            generateTile(tileSet);
+        }
+        function moveTiles(tiles, size, dirc){//up:0, down: 1, left: 2, right: 3
+            function logic1(arrSet){
+                for(let k=0; k<arrSet.length; k++){
+                    let temp = [];
+                    arrSet[k].forEach(e=>{
+                        if (e != 0) temp.push(e);
+                    });
+                    for(let i=0; i<temp.length; i++){
+                        if (temp[i] == temp[i+1]){
+                            if(temp[i+1] == clear-1){
+                                onWinEvent();
+                            }
+                            temp[i+1] += 1;
+                            temp.splice(i,1);
+                            emptyCount += 1;
+                        }
+                    }
+                    const leng = temp.length;
+                    for(let i=0; i<size-leng; i++)
+                        temp.push(0);
+                    arrSet[k] = temp;
+                }
+            }
+            let arrSet = [];
+            let res = [];
+            switch(dirc){
+                case(0):
+                    for(let i=0; i<size; i++){
+                        let temp =[];
+                        for(let j=0; j<size; j++){temp.push(tiles[i*size+j]);}
+                        arrSet.push(temp);
+                    }
+                    logic1(arrSet);
+                    for(let i=0; i<size; i++){
+                        for(let j=0; j<size; j++){res[i*size+j] = arrSet[i][j];}
+                    }
+                break;
+                case(1):
+                    for(let i=0; i<size; i++){
+                        let temp =[];
+                        for(let j=size-1; j>=0; j--){temp.push(tiles[i*size+j]);}
+                        arrSet.push(temp);
+                    }
+                    logic1(arrSet);
+                    for(let i=0; i<size; i++){
+                        for(let j=0; j<size; j++){res[i*size+(size-j-1)] = arrSet[i][j];}
+                    }
+                break;
+                case(2):
+                    for(let i=0; i<size; i++){
+                        let temp =[];
+                        for(let j=0; j<size; j++){temp.push(tiles[i+j*size]);}
+                        arrSet.push(temp);
+                    }
+                    logic1(arrSet);
+                    for(let i=0; i<size; i++){
+                        for(let j=0; j<size; j++){res[i+j*size] = arrSet[i][j];}
+                    }
+                break;
+                case(3):
+                    for(let i=0; i<size; i++){
+                        let temp =[];
+                        for(let j=size-1; j>=0; j--){temp.push(tiles[i+j*size]);}
+                        arrSet.push(temp);
+                    }
+                    logic1(arrSet);
+                    for(let i=0; i<size; i++){
+                        for(let j=0; j<size; j++){res[i+(size-j-1)*size] = arrSet[i][j];}
+                    }
+                break;   
+            }
+            return res;
+        }
+        function checkFail(){
+            let copy = tileSet.slice();
+            let EC = emptyCount;
+            const str = JSON.stringify(tileSet);
+
+            for(let dirc = 0; dirc<=3; dirc++){
+                let temp = moveTiles(copy,boardWidth, dirc);
+                if (JSON.stringify(temp) != str){
+                    emptyCount = EC;
+                    return false;
+                }
+            }
+            emptyCount = EC;
+            return true;
+        }
+        function getScore(tileSet){
+            let res = 0;
+            tileSet.forEach(e=>{
+                if (e != 0) res += 2**e;
+            });
+            return res;
+        }
+
+        //eventListeners
+        let startMpos= null;
+        function onMouseDown(event){
+            startMpos = [event.pageX,event.pageY ];
+        }
+        function onMouseUp(event){
+            if (startMpos == null) return false;
+            const arrive = [event.pageX,event.pageY];
+            const threshold = document.getElementById("board").offsetHeight/8;
+            //check direction
+            const xmove = startMpos[0]-arrive[0];
+            const ymove = startMpos[1]-arrive[1];
+            const distance = Math.sqrt(xmove**2+ymove**2);
+            let direction;//up:0, down: 1, left: 2, right: 3
+            if (distance > threshold){
+                if (Math.abs(xmove) < Math.abs(ymove)){
+                    if (ymove > 0) direction=0;
+                    else direction=1;
+                }
+                else{
+                    if (xmove > 0) direction=2;
+                    else direction=3;
+                }
+                let res = tileSet.slice();
+                tileSet = moveTiles(tileSet,boardWidth,direction);
+                if (JSON.stringify(tileSet) != JSON.stringify(res)){
+                    generateTile(tileSet);
+                }
+            }
+            startMpos=null;
+        }
+        function onTouchStart(event){
+            startMpos = [event.changedTouches[0].pageX,event.changedTouches[0].pageY ];
+        }
+        function onTouchEnd(event){
+            if (startMpos == null) return false;
+            const arrive = [event.changedTouches[0].pageX,event.changedTouches[0].pageY];
+            const threshold = document.getElementById("board").offsetHeight/8;
+            //check direction
+            const xmove = startMpos[0]-arrive[0];
+            const ymove = startMpos[1]-arrive[1];
+            const distance = Math.sqrt(xmove**2+ymove**2);
+            let direction;//up:0, down: 1, left: 2, right: 3
+            if (distance > threshold){
+                if (Math.abs(xmove) < Math.abs(ymove)){
+                    if (ymove > 0) direction=0;
+                    else direction=1;
+                }
+                else{
+                    if (xmove > 0) direction=2;
+                    else direction=3;
+                }
+                let res = tileSet.slice();
+                tileSet = moveTiles(tileSet,boardWidth,direction);
+                if (JSON.stringify(tileSet) != JSON.stringify(res)){
+                    generateTile(tileSet);
+                }
+            }
+            startMpos=null;
+        }
+        function onKeyPressed(event){
+            let direction = null;
+            switch(event.key){
+                case("ArrowUp"): direction = 0;
+                break;
+                case("ArrowDown"): direction = 1;
+                break;
+                case("ArrowLeft"): direction = 2;
+                break;
+                case("ArrowRight"): direction = 3;
+                break;
+                case("Escape"): onRestart();
+                break;
+            }    
+            if (direction != null){
+                let res = tileSet.slice();
+                tileSet = moveTiles(tileSet,boardWidth,direction);
+                if (JSON.stringify(tileSet) != JSON.stringify(res)){
+                    generateTile(tileSet);
+                }
+            }
+        }
+        function onResizeEvent(event){
+            board.updateBoardStyle();
+            buttonSet.updateButtonSetStyle(buttonSet1);
+            buttonSet.updateButtonSetStyle(buttonSet2);
+            buttonSet.updateButtonSetStyle(buttonSet3);
+        }
+        function onLoseEvent(){
+            window.blur();
+            document.getElementById("failsign").style.visibility="visible";
+        }
+        function onWinEvent(){
+            document.getElementById("congratuation").style.visibility="visible";
+        }
+        function onRestart(){
+            document.getElementById("failsign").style.visibility="hidden";
+            document.getElementById("congratuation").style.visibility="hidden";
+            const size = document.getElementById("boardSize");
+            if (size.value > 10) {
+                boardWidth = 10;
+                size.value = 10;
+            }
+            else if (size.value < 2) {
+                boardWidth = 2;
+                size.value = 2;
+            }
+            else boardWidth = size.value;
+            fourRatio = document.getElementById("4ratio").value/100;
+            setGame(boardWidth);
+            onResizeEvent();
+        }
+
+        //config
+        let restartButton = {
+            "onPress": onRestart,
+            "text":"restart",
+            "color":"rgb(94, 68, 40)",
+        };
+        let upButton = {
+            "onPress": ()=>{
+                let res = tileSet.slice();
+                tileSet = moveTiles(tileSet,boardWidth,0);
+                if (JSON.stringify(tileSet) != JSON.stringify(res)){
+                    generateTile(tileSet);
+                }
+            },
+            "text":"up",
+        };
+        let downButton = {
+            "onPress": ()=>{
+                let res = tileSet.slice();
+                tileSet = moveTiles(tileSet,boardWidth,1);
+                if (JSON.stringify(tileSet) != JSON.stringify(res)){
+                    generateTile(tileSet);
+                }
+            },
+            "text":"down",
+        };
+        let leftButton = {
+            "onPress": ()=>{
+                let res = tileSet.slice();
+                tileSet = moveTiles(tileSet,boardWidth,2);
+                if (JSON.stringify(tileSet) != JSON.stringify(res)){
+                    generateTile(tileSet);
+                }
+            },
+            "text":"left",
+        };
+        let righttButton = {
+            "onPress": ()=>{
+                let res = tileSet.slice();
+                tileSet = moveTiles(tileSet,boardWidth,3);
+                if (JSON.stringify(tileSet) != JSON.stringify(res)){
+                    generateTile(tileSet);
+                }
+            },
+            "text":"right",
+        };
+
+        //initialize
+        window.addEventListener("resize",onResizeEvent,false);
+        window.addEventListener("focus",onResizeEvent,false);
+        window.addEventListener("fullscreenchange",onResizeEvent,false);
+        window.addEventListener("keydown",onKeyPressed);
+
+        let buttonSet1 = buttonSet.readyButtonSet("buttonSet1");
+        let buttonSet2 = buttonSet.readyButtonSet("buttonSet2");
+        let buttonSet3 = buttonSet.readyButtonSet("buttonSet3");
+
+        buttonSet.updateButtonSet([null,null,downButton,null,null],buttonSet1);
+        buttonSet.updateButtonSet([null,leftButton,{
+            "onPress": null,
+            "text":"",
+            "color":"rgb(94, 68, 40)",
+        },righttButton,null],buttonSet2);
+        buttonSet.updateButtonSet([null,null,upButton,null,restartButton],buttonSet3);
+
+
+        let ratioCon = document.createElement("div");
+        const ratioH = 30;
+        ratioCon.setAttribute('style',`
+            height: ${ratioH};
+            width: 100%;    
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+        `);
+        container.appendChild(ratioCon);
+        let contents  = document.createElement("div");
+        contents.setAttribute('style',`
+            width: auto;
+            height:  ${ratioH};
+            font-weight: bolder;
+            font-size: 1.0em;
+            color : rgb(94, 68, 40);
+        `);
+        contents.textContent = "4 Ratio : ";
+        ratioCon.appendChild(contents);
+
+        contents = document.createElement("input");
+        contents.setAttribute('style',`
+            flex : 0.7;
+            max-width: 35vmin;
+            min-width: ${ratioH*3};
+            height:  ${ratioH*0.7};
+            margin-right: 2vw;
+        `);
+        contents.setAttribute("id","4ratio");
+        contents.setAttribute("type","range");
+        contents.setAttribute("value",`${fourRatio*100}`);
+        contents.setAttribute("min","0");
+        contents.setAttribute("max","100");
+        ratioCon.appendChild(contents);
+
+
+        contents  = document.createElement("div");
+        contents.setAttribute('style',`
+            width: auto;
+            height:  ${ratioH};
+            font-weight: bold;
+            font-size: 1.0em;
+            color : rgb(94, 68, 40);
+        `);
+        contents.textContent = "Size(2~10) : ";
+        ratioCon.appendChild(contents);
+
+        contents = document.createElement("input");
+        contents.setAttribute('style',`
+            width: ${ratioH*1.5};
+            height:  ${ratioH*1.0};
+        `);
+        contents.setAttribute("id","boardSize");
+        contents.setAttribute("type","number");
+        contents.setAttribute("value","4");
+        contents.setAttribute("min","2");
+        contents.setAttribute("max","10");
+        ratioCon.appendChild(contents);
+
+
+        board.readyBoard("board");
+        boardElement.addEventListener("mousedown",onMouseDown,false);
+        document.getElementsByTagName("body")[0].addEventListener("mouseup",onMouseUp,false);
+
+        //test//
+        boardElement.addEventListener("touchstart",onTouchStart,false);
+        document.getElementsByTagName("body")[0].addEventListener("touchend",onTouchEnd,false);
+
+        //alert("version v1");
+        setGame(boardWidth);
+
+    </script>
+</html>

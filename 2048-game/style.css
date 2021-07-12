@@ -1,0 +1,19 @@
+.temp{
+
+    white-space: nowrap;
+    text-align: justify;
+    top:0;
+    left: 0;
+    opacity: 1;
+    animation: fadein 1s;
+    color: rgb(225, 255, 250);
+    display: flex;
+    background-color: powderblue;
+
+}
+        
+.test{
+    display: flex;
+    flex-direction: column;
+    align-self:center;
+}
