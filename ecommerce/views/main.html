@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            body{
+                width: 100vw;
+                height: 100vh;
+                background-color:lightgray;
+                display: flex;
+                flex-direction: column;
+                margin:0;
+            }
+            #cart{
+                width: 100vw;
+                height: 100vh;
+                position: absolute;
+                flex-direction: column;
+                margin:0;
+                background-color:lightgray;
+                visibility: hidden;
+                z-index: 2;
+            }
+            .title{
+                height: 90px;
+                text-align: center;
+                font-size: 3rem;
+                color: white;
+                padding-top: 10px;
+                background-color: #202020;
+            }
+            .navbar{
+                height: 75px;
+                display: flex;
+                flex-direction: row-reverse;
+            }
+            #itemlist{
+                flex:1;
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                overflow: hidden;
+            }
+            #cartContents{
+                flex:1;
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                overflow: hidden;
+            }
+            .footer{
+                height:50px;
+                background-color: #202020;
+            }
+            .button{
+                height: 75px;
+                width: 75px;
+            }
+            .cartButton{
+                background-image: url("../source/cart.png");
+                background-size: cover;
+            }
+            .backButton{
+                background-image: url("../source/back.png");
+                background-size: cover;
+            }
+            .total{
+                position: fixed;
+                bottom: 0px;
+                width: 100%;
+                height: 100px;
+                background-color: #202020;
+                font-size: 3rem;
+                color: white;
+                text-align: left;
+                padding-left: 50px;
+            }
+        </style>
+
+    </head>
+    <body>
+        <div class="title">My E-commerce</div>
+        <div class="navbar">
+            <div class="backButton button" onclick="location.href=`../index.html`"></div>
+            <div class="cartButton button" onclick="document.getElementById('cart').style.visibility='visible'"></div>
+        </div>
+        <div id="itemlist">
+        </div>
+        <div id="cart">
+            <div class="title">My E-commerce</div>
+            <div class="navbar">
+                <div class="backButton button" onclick="document.getElementById('cart').style.visibility='hidden'"></div>
+                <input type="button" value="Buy" id="buybutton" style="width:75px">
+            </div>
+            <div id="cartContents">
+            </div>
+            <div class="total"></div>
+        </div>
+        <div class="footer"></div>
+        <script src="../scripts/main.js" type="module"></script>
+    </body>
+</html>
